@@ -1,155 +1,91 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Card,
-  CardContent,
-  Box,
-  Tabs,
-  Tab,
-  Link,
-  Divider,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Container, Paper, Typography, TextField, Button, Box, Link } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const [tabValue, setTabValue] = useState(0);
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    confirmPassword: '',
+    password: ''
   });
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would handle authentication
-    if (tabValue === 0) {
-      // Login
-      console.log('Login:', formData);
+    setError('');
+
+    try {
+      await login(formData);
       navigate('/dashboard');
-    } else {
-      // Sign up
-      console.log('Sign up:', formData);
-      navigate('/dashboard');
+    } catch (error) {
+      setError(error.response?.data?.message || 'Login failed');
     }
   };
 
   return (
     <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Card>
-          <CardContent>
-            <Typography variant="h4" component="h1" align="center" gutterBottom>
-              Welcome Back
-            </Typography>
-            <Typography variant="body1" align="center" color="text.secondary" paragraph>
-              {tabValue === 0
-                ? 'Sign in to continue your skincare journey'
-                : 'Create an account to start tracking your skincare routine'}
-            </Typography>
+      <Paper sx={{ p: 4, mt: 8 }}>
+        <Typography variant="h4" align="center" gutterBottom>
+          Login
+        </Typography>
 
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              centered
-              sx={{ mb: 3 }}
-            >
-              <Tab label="Sign In" />
-              <Tab label="Sign Up" />
-            </Tabs>
+        {error && (
+          <Typography color="error" align="center" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
+        )}
 
-            <form onSubmit={handleSubmit}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                margin="normal"
-                required
-              />
-              <TextField
-                fullWidth
-                label="Password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                margin="normal"
-                required
-              />
-              {tabValue === 1 && (
-                <TextField
-                  fullWidth
-                  label="Confirm Password"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  margin="normal"
-                  required
-                />
-              )}
+        <form onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            margin="normal"
+            required
+          />
+          <TextField
+            fullWidth
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            margin="normal"
+            required
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 3 }}
+          >
+            Login
+          </Button>
+        </form>
 
-              {tabValue === 0 && (
-                <Box sx={{ textAlign: 'right', mt: 1 }}>
-                  <Link href="#" variant="body2">
-                    Forgot password?
-                  </Link>
-                </Box>
-              )}
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                size="large"
-                sx={{ mt: 3, mb: 2 }}
-              >
-                {tabValue === 0 ? 'Sign In' : 'Sign Up'}
-              </Button>
-
-              {tabValue === 0 && (
-                <>
-                  <Divider sx={{ my: 2 }}>OR</Divider>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    size="large"
-                    sx={{ mb: 2 }}
-                  >
-                    Continue with Google
-                  </Button>
-                </>
-              )}
-            </form>
-          </CardContent>
-        </Card>
-      </Box>
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Typography variant="body2">
+            Don't have an account?{' '}
+            <Link component={RouterLink} to="/register">
+              Register here
+            </Link>
+          </Typography>
+        </Box>
+      </Paper>
     </Container>
   );
 };

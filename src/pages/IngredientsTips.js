@@ -26,23 +26,50 @@ const IngredientsTips = () => {
     {
       name: 'Hyaluronic Acid',
       category: 'Hydrating',
-      description: 'A powerful humectant that can hold up to 1000 times its weight in water.',
-      benefits: ['Deep hydration', 'Plumping effect', 'Suitable for all skin types'],
+      description:
+        'A powerful humectant that attracts and retains moisture in the skin, helping to keep it plump, hydrated, and smooth throughout the day.',
+      benefits: [
+        'Deeply hydrates and plumps the skin',
+        'Improves skin elasticity and texture',
+        'Suitable for all skin types, even sensitive',
+      ],
       safety: 'Low risk',
     },
     {
       name: 'Niacinamide',
       category: 'Brightening',
-      description: 'A form of vitamin B3 that helps improve skin texture and tone.',
-      benefits: ['Reduces inflammation', 'Minimizes pores', 'Strengthens skin barrier'],
+      description:
+        'A form of vitamin B3 that helps strengthen the skin barrier, improve uneven tone, and reduce the appearance of pores and redness.',
+      benefits: [
+        'Evens out skin tone and brightens',
+        'Minimizes enlarged pores and redness',
+        'Strengthens the natural skin barrier',
+      ],
       safety: 'Low risk',
     },
     {
       name: 'Retinol',
       category: 'Anti-aging',
-      description: 'A derivative of vitamin A that promotes cell turnover.',
-      benefits: ['Reduces fine lines', 'Improves skin texture', 'Fades dark spots'],
+      description:
+        'A vitamin A derivative that accelerates cell turnover, reduces fine lines, and helps fade dark spots for a smoother, youthful complexion.',
+      benefits: [
+        'Reduces wrinkles and fine lines',
+        'Improves skin texture and clarity',
+        'Fades dark spots and hyperpigmentation',
+      ],
       safety: 'Moderate risk',
+    },
+    {
+      name: 'Vitamin C',
+      category: 'Brightening',
+      description:
+        'A potent antioxidant that protects against free radicals, brightens dull skin, and boosts collagen for a firmer, radiant appearance.',
+      benefits: [
+        'Brightens and evens skin tone',
+        'Boosts collagen and skin firmness',
+        'Protects from environmental damage',
+      ],
+      safety: 'Low risk',
     },
   ];
 

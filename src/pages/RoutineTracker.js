@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -29,53 +29,164 @@ const RoutineTracker = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [newStep, setNewStep] = useState('');
   const [routines, setRoutines] = useState({
-    morning: [
-      { id: 1, name: 'Cleanser', completed: true },
-      { id: 2, name: 'Toner', completed: false },
-      { id: 3, name: 'Serum', completed: false },
-      { id: 4, name: 'Moisturizer', completed: false },
-      { id: 5, name: 'Sunscreen', completed: false },
-    ],
-    evening: [
-      { id: 1, name: 'Makeup Remover', completed: true },
-      { id: 2, name: 'Cleanser', completed: true },
-      { id: 3, name: 'Toner', completed: false },
-      { id: 4, name: 'Treatment', completed: false },
-      { id: 5, name: 'Moisturizer', completed: false },
-    ],
+    morning: [],
+    evening: [],
   });
+
+  // Get token from localStorage
+  const getAuthToken = () => {
+    return localStorage.getItem('token');
+  };
+
+  useEffect(() => {
+    const fetchRoutines = async () => {
+      try {
+        const token = getAuthToken();
+        if (!token) {
+          console.error('No authentication token found');
+          return;
+        }
+
+        const response = await fetch('http://localhost:5000/api/routines/my-routines', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch routines');
+        }
+
+        const data = await response.json();
+        
+        // Transform the data into morning/evening format
+        const transformedData = {
+          morning: data.filter(routine => routine.type === 'morning'),
+          evening: data.filter(routine => routine.type === 'evening')
+        };
+        
+        setRoutines(transformedData);
+      } catch (error) {
+        console.error('Error fetching routines:', error);
+      }
+    };
+
+    fetchRoutines();
+  }, []);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  const handleAddStep = () => {
+  const handleAddStep = async () => {
     if (newStep.trim()) {
       const routineType = tabValue === 0 ? 'morning' : 'evening';
-      const newId = Math.max(...routines[routineType].map(step => step.id)) + 1;
-      setRoutines({
-        ...routines,
-        [routineType]: [...routines[routineType], { id: newId, name: newStep, completed: false }],
-      });
-      setNewStep('');
-      setOpenDialog(false);
+      const token = getAuthToken();
+      
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5000/api/routines', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: newStep,
+            type: routineType,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to add routine');
+        }
+        
+        const data = await response.json();
+        setRoutines(prevRoutines => ({
+          ...prevRoutines,
+          [routineType]: [...(prevRoutines[routineType] || []), data],
+        }));
+        setNewStep('');
+        setOpenDialog(false);
+      } catch (error) {
+        console.error('Error adding routine step:', error);
+      }
     }
   };
 
-  const handleToggleComplete = (routineType, stepId) => {
-    setRoutines({
-      ...routines,
-      [routineType]: routines[routineType].map(step =>
-        step.id === stepId ? { ...step, completed: !step.completed } : step
-      ),
-    });
+  const handleToggleComplete = async (routineType, routineId) => {
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const routine = routines[routineType].find(r => r._id === routineId);
+      if (!routine) return;
+
+      const response = await fetch(`http://localhost:5000/api/routines/${routineId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...routine,
+          completed: !routine.completed
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update routine');
+      }
+      
+      const updatedRoutine = await response.json();
+      setRoutines(prevRoutines => ({
+        ...prevRoutines,
+        [routineType]: prevRoutines[routineType].map(r =>
+          r._id === routineId ? updatedRoutine : r
+        ),
+      }));
+    } catch (error) {
+      console.error('Error updating routine step:', error);
+    }
   };
 
-  const handleDeleteStep = (routineType, stepId) => {
-    setRoutines({
-      ...routines,
-      [routineType]: routines[routineType].filter(step => step.id !== stepId),
-    });
+  const handleDeleteStep = async (routineType, routineId) => {
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/routines/${routineId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete routine');
+      }
+      
+      // Only update state if delete was successful
+      setRoutines(prevRoutines => ({
+        ...prevRoutines,
+        [routineType]: prevRoutines[routineType].filter(r => r._id !== routineId),
+      }));
+    } catch (error) {
+      console.error('Error deleting routine step:', error);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
@@ -97,9 +208,9 @@ const RoutineTracker = () => {
           </Tabs>
 
           <List>
-            {routines[tabValue === 0 ? 'morning' : 'evening'].map((step) => (
+            {(routines[tabValue === 0 ? 'morning' : 'evening'] || []).map((routine) => (
               <ListItem
-                key={step.id}
+                key={routine._id}
                 sx={{
                   bgcolor: 'background.paper',
                   mb: 1,
@@ -107,10 +218,10 @@ const RoutineTracker = () => {
                 }}
               >
                 <ListItemText
-                  primary={step.name}
+                  primary={routine.name}
                   sx={{
-                    textDecoration: step.completed ? 'line-through' : 'none',
-                    color: step.completed ? 'text.secondary' : 'text.primary',
+                    textDecoration: routine.completed ? 'line-through' : 'none',
+                    color: routine.completed ? 'text.secondary' : 'text.primary',
                   }}
                 />
                 <ListItemSecondaryAction>
@@ -118,19 +229,19 @@ const RoutineTracker = () => {
                     edge="end"
                     onClick={() => handleToggleComplete(
                       tabValue === 0 ? 'morning' : 'evening',
-                      step.id
+                      routine._id
                     )}
                     sx={{ mr: 1 }}
                   >
                     <CheckCircleIcon
-                      color={step.completed ? 'success' : 'action'}
+                      color={routine.completed ? 'success' : 'action'}
                     />
                   </IconButton>
                   <IconButton
                     edge="end"
                     onClick={() => handleDeleteStep(
                       tabValue === 0 ? 'morning' : 'evening',
-                      step.id
+                      routine._id
                     )}
                   >
                     <DeleteIcon />

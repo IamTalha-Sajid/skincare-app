@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Grid,
@@ -17,26 +17,87 @@ import {
 } from '@mui/icons-material';
 
 const Dashboard = () => {
-  // Mock data - in a real app, this would come from your state management
-  const stats = {
+  const [stats, setStats] = useState({
     morningRoutine: {
-      completed: 5,
-      total: 7,
-      lastCompleted: 'Today, 8:30 AM',
+      completed: 0,
+      total: 0,
+      lastCompleted: '',
     },
     eveningRoutine: {
-      completed: 3,
-      total: 7,
-      lastCompleted: 'Yesterday, 10:15 PM',
+      completed: 0,
+      total: 0,
+      lastCompleted: '',
     },
     products: {
-      total: 12,
-      expiring: 2,
+      total: 0,
+      expiring: 0,
     },
-  };
+  });
+
+  // Get token from localStorage
+  const getAuthToken = useCallback(() => {
+    return localStorage.getItem('token');
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/routines/my-routines', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch routines');
+      }
+
+      const routines = await response.json();
+      
+      // Calculate stats from routines
+      const morningRoutines = routines.filter(r => r.type === 'morning');
+      const eveningRoutines = routines.filter(r => r.type === 'evening');
+      
+      const stats = {
+        morningRoutine: {
+          completed: morningRoutines.filter(r => r.completed).length,
+          total: morningRoutines.length,
+          lastCompleted: morningRoutines.find(r => r.completed)?.updatedAt || '',
+        },
+        eveningRoutine: {
+          completed: eveningRoutines.filter(r => r.completed).length,
+          total: eveningRoutines.length,
+          lastCompleted: eveningRoutines.find(r => r.completed)?.updatedAt || '',
+        },
+        products: {
+          total: 0, // You'll need to implement product fetching
+          expiring: 0, // You'll need to implement product fetching
+        },
+      };
+
+      setStats(stats);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  }, [getAuthToken]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const calculateProgress = (completed, total) => {
+    if (total === 0) return 0;
     return (completed / total) * 100;
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -68,7 +129,7 @@ const Dashboard = () => {
                 </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary">
-                Last completed: {stats.morningRoutine.lastCompleted}
+                Last completed: {formatDate(stats.morningRoutine.lastCompleted)}
               </Typography>
             </CardContent>
           </Card>
@@ -96,7 +157,7 @@ const Dashboard = () => {
                 </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary">
-                Last completed: {stats.eveningRoutine.lastCompleted}
+                Last completed: {formatDate(stats.eveningRoutine.lastCompleted)}
               </Typography>
             </CardContent>
           </Card>

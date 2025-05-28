@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Toolbar,
@@ -15,11 +15,14 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SpaIcon from '@mui/icons-material/Spa';
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const menuItems = [
     { text: 'Home', path: '/' },
@@ -35,6 +38,11 @@ const Navbar = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   const drawer = (
     <List>
       {menuItems.map((item) => (
@@ -48,6 +56,15 @@ const Navbar = () => {
           <ListItemText primary={item.text} />
         </ListItem>
       ))}
+      {user ? (
+        <ListItem button onClick={handleLogout}>
+          <ListItemText primary="Logout" />
+        </ListItem>
+      ) : (
+        <ListItem button component={RouterLink} to="/login" onClick={handleDrawerToggle}>
+          <ListItemText primary="Login" />
+        </ListItem>
+      )}
     </List>
   );
 
@@ -82,9 +99,15 @@ const Navbar = () => {
               ))}
             </>
           )}
-          <Button color="inherit" component={RouterLink} to="/login">
-            Login
-          </Button>
+          {user ? (
+            <Button color="inherit" onClick={handleLogout}>
+              Logout
+            </Button>
+          ) : (
+            <Button color="inherit" component={RouterLink} to="/login">
+              Login
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
       <Drawer

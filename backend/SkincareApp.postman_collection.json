@@ -1,0 +1,313 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Skincare App API",
+		"description": "API collection for the Skincare Application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"skinType\": \"combination\",\n    \"skinConcerns\": [\"acne\", \"dryness\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new user"
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login with existing credentials"
+					}
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "profile"]
+						},
+						"description": "Get user profile information"
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"skinType\": \"oily\",\n    \"skinConcerns\": [\"acne\", \"oiliness\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "profile"]
+						},
+						"description": "Update user profile information"
+					}
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/products?category=cleanser&skinType=oily&minPrice=10&maxPrice=50&sort=price_asc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"],
+							"query": [
+								{
+									"key": "category",
+									"value": "cleanser"
+								},
+								{
+									"key": "skinType",
+									"value": "oily"
+								},
+								{
+									"key": "minPrice",
+									"value": "10"
+								},
+								{
+									"key": "maxPrice",
+									"value": "50"
+								},
+								{
+									"key": "sort",
+									"value": "price_asc"
+								}
+							]
+						},
+						"description": "Get all products with optional filtering and sorting"
+					}
+				},
+				{
+					"name": "Get Single Product",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/products/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "product_id_here"
+								}
+							]
+						},
+						"description": "Get details of a single product"
+					}
+				},
+				{
+					"name": "Add Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Gentle Cleanser\",\n    \"brand\": \"Skincare Brand\",\n    \"category\": \"cleanser\",\n    \"description\": \"A gentle cleanser for all skin types\",\n    \"ingredients\": [\"water\", \"glycerin\", \"niacinamide\"],\n    \"skinTypes\": [\"dry\", \"oily\", \"combination\", \"normal\", \"sensitive\"],\n    \"concerns\": [\"acne\", \"dryness\"],\n    \"price\": 24.99,\n    \"imageUrl\": \"https://example.com/cleanser.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						},
+						"description": "Add a new product (admin only)"
+					}
+				},
+				{
+					"name": "Add Review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Great product! Works wonders for my skin.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products/:id/reviews",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", ":id", "reviews"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "product_id_here"
+								}
+							]
+						},
+						"description": "Add a review to a product"
+					}
+				}
+			]
+		},
+		{
+			"name": "Routines",
+			"item": [
+				{
+					"name": "Get My Routines",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/routines/my-routines",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "routines", "my-routines"]
+						},
+						"description": "Get all routines created by the authenticated user"
+					}
+				},
+				{
+					"name": "Get Public Routines",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/routines/public",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "routines", "public"]
+						},
+						"description": "Get all public routines"
+					}
+				},
+				{
+					"name": "Create Routine",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Morning Routine\",\n    \"description\": \"My daily morning skincare routine\",\n    \"type\": \"morning\",\n    \"products\": [\n        {\n            \"product\": \"product_id_here\",\n            \"order\": 1,\n            \"notes\": \"Apply on damp skin\"\n        }\n    ],\n    \"isPublic\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/routines",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "routines"]
+						},
+						"description": "Create a new skincare routine"
+					}
+				},
+				{
+					"name": "Like/Unlike Routine",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/routines/:id/like",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "routines", ":id", "like"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "routine_id_here"
+								}
+							]
+						},
+						"description": "Like or unlike a routine"
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000"
+		},
+		{
+			"key": "token",
+			"value": "your_jwt_token_here"
+		}
+	]
+} 
